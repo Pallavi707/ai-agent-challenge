@@ -1,0 +1,9 @@
+# Dependencies for the AI Agent Challenge project
+pandas
+pdfplumber
+pytest
+tqdm
+requests
+python-dotenv
+google-generativeai
+langgraph
