@@ -1,5 +1,3 @@
-import numpy as np
-import re
 import pandas as pd
 import pdfplumber
 from typing import Optional
@@ -31,20 +29,21 @@ def parse(pdf_path: str) -> pd.DataFrame:
                 header_row = table[0]
                 
                 # Normalize header names (remove newlines, strip spaces)
-                normalized_header = [h.replace('\n', ' ').strip() if h is not None else '' for h in header_row]
+                normalized_header = [h.replace('\n', ' ').strip() for h in header_row if h is not None]
 
                 # Identify the transaction table by checking for key column names
+                # Assumes 'Date', 'Description', 'Debit', 'Credit', and 'Balance' are present.
                 if 'Date' in normalized_header and \
                    'Description' in normalized_header and \
-                   'Debit Amt' in normalized_header and \
-                   'Credit Amt' in normalized_header and \
+                   'Debit' in normalized_header and \
+                   'Credit' in normalized_header and \
                    'Balance' in normalized_header:
                     
-                    # Get column indices for reliable data extraction using the exact expected names
+                    # Get column indices for reliable data extraction
                     date_idx = normalized_header.index('Date')
                     desc_idx = normalized_header.index('Description')
-                    debit_idx = normalized_header.index('Debit Amt')
-                    credit_idx = normalized_header.index('Credit Amt')
+                    debit_idx = normalized_header.index('Debit')
+                    credit_idx = normalized_header.index('Credit')
                     balance_idx = normalized_header.index('Balance')
                     
                     # Process rows after the header
@@ -52,24 +51,23 @@ def parse(pdf_path: str) -> pd.DataFrame:
                         if not row or not any(row): # Skip empty or entirely None rows
                             continue
                         
-                        # The maximum index ensures the row must be at least this long to access all required columns
+                        # Ensure row has enough columns to avoid IndexError
+                        # The max index plus one ensures the row is long enough for all relevant columns
                         required_len = max(date_idx, desc_idx, debit_idx, credit_idx, balance_idx) + 1
                         if len(row) < required_len:
                             # This row is likely malformed or an irrelevant table artifact, skip it.
                             continue 
                         
-                        # Helper function to convert string to float or np.nan
-                        # The test failure indicated a preference for 'nan' (np.nan) over '<NA>' (pd.NA)
-                        # for missing numeric values, consistent with the expected CSV schema.
-                        def to_float_or_nan(val: Optional[str]) -> Optional[float]:
+                        # Helper function to convert string to float or pd.NA
+                        def to_float_or_na(val: Optional[str]) -> Optional[float]:
                             if val is None or str(val).strip() == '':
-                                return np.nan # Use np.nan for missing numeric values
+                                return pd.NA
                             try:
-                                # Remove commas (common in large numbers) and extra spaces, then convert to float
+                                # Remove commas and extra spaces, then convert to float
                                 return float(str(val).replace(',', '').strip())
                             except ValueError:
-                                # Return np.nan for values that cannot be converted to float
-                                return np.nan
+                                # Return pd.NA for values that cannot be converted to float
+                                return pd.NA
                         
                         # Extract and clean Date and Description values
                         date_val_raw = row[date_idx]
@@ -77,14 +75,14 @@ def parse(pdf_path: str) -> pd.DataFrame:
                         date_val = str(date_val_raw).strip() if date_val_raw is not None else ''
                         desc_val = str(desc_val_raw).strip() if desc_val_raw is not None else ''
 
-                        # Extract and convert Debit, Credit, Balance values to float or np.nan
+                        # Extract and convert Debit, Credit, Balance values to float or pd.NA
                         debit_val = row[debit_idx]
                         credit_val = row[credit_idx]
                         balance_val = row[balance_idx]
                         
-                        debit_amt: Optional[float] = to_float_or_nan(debit_val)
-                        credit_amt: Optional[float] = to_float_or_nan(credit_val)
-                        balance_amt: Optional[float] = to_float_or_nan(balance_val)
+                        debit_amt: Optional[float] = to_float_or_na(debit_val)
+                        credit_amt: Optional[float] = to_float_or_na(credit_val)
+                        balance_amt: Optional[float] = to_float_or_na(balance_val)
                         
                         # Append the extracted transaction to the list
                         all_transactions.append({
@@ -104,8 +102,8 @@ def parse(pdf_path: str) -> pd.DataFrame:
     # Ensure the DataFrame columns are in the exact specified order
     df = df[['Date', 'Description', 'Debit Amt', 'Credit Amt', 'Balance']]
     
-    # Data types:
+    # Data types should be correct based on extraction logic:
     # 'Date' and 'Description' will be object (string)
-    # 'Debit Amt', 'Credit Amt', 'Balance' will be float64 (due to np.nan usage)
+    # 'Debit Amt', 'Credit Amt', 'Balance' will be Float64 (pandas nullable float type due to pd.NA usage)
     
     return df
