@@ -23,6 +23,8 @@ The agent reads the provided **ICICI Bank sample statement** and automatically g
 
 **Project Structure**
 
+```text
+
 ai-agent-challenge/
 │
 ├── agent.py                 # Core agent (generation + testing + self-fix loop)
@@ -43,9 +45,8 @@ ai-agent-challenge/
 ├── requirements.txt         # Dependencies
 └── .env                     # Contains GOOGLE_API_KEY
 
-
-
-
+```
+```
 **Agent Workflow**
 
 generate_parser → run_tests → decide_next 
@@ -57,10 +58,4 @@ generate_parser → run_tests → decide_next
             report_success ← self_correct → run_tests (≤3 attempts)
                     ↓
                    END
-
-**Key additions:**
-1. Added `artifacts/` to project structure with explanation
-2. Created dedicated "Artifacts Folder" section explaining purpose and usage
-3. Noted it's auto-generated (not in git by default)
-4. Connected it to the workflow (showing it tracks the ≤3 attempts)
-
+```
