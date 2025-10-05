@@ -25,24 +25,24 @@ The agent reads the provided **ICICI Bank sample statement** and automatically g
 
 ai-agent-challenge/
 │
-├── agent.py                     # Core agent logic (generation + testing + self-fix)
-│
+├── agent.py                 # Core agent (generation + testing + self-fix loop)
 ├── custom_parser/
-│   └── icici_parser.py          # Auto-generated parser file (final version)
+│   ├── __init__.py
+│   └── icici_parser.py      # Auto-generated parser (final version)
 │
-├── artifacts/                   # Debug archive (created during execution)
-│   └── icici/
-│       ├── attempt_1.py         # First generation attempt
-│       ├── attempt_2.py         # After first self-correction
-│       └── attempt_3.py         # After second self-correction
+├── artifacts/               # Debug archive (auto-created during execution)
+│   ├── attempt_1.py         # First generation attempt
+│   ├── attempt_2.py         # After first self-correction
+│   └── attempt_3.py         # After second self-correction
 │
 ├── data/
 │   └── icici/
-│       ├── icici sample.pdf     # Sample bank statement
-│       └── result.csv           # Expected parsed output
+│       ├── icici sample.pdf # Input sample PDF
+│       └── result.csv       # Expected parsed CSV output
 │
-├── requirements.txt             # Dependencies
-└── .env                         # Contains GOOGLE_API_KEY
+├── requirements.txt         # Dependencies
+└── .env                     # Contains GOOGLE_API_KEY
+
 
 
 
